@@ -1,6 +1,7 @@
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+// const { Sequelize } = require('sequelize');
 
 process.env.JWT_SECRET = 'neverTell';
 const SALT_COUNT = 10;
@@ -19,6 +20,12 @@ const createTestUser = async (userData) => {
     token = jwt.sign({id, username: createdUsername}, JWT_SECRET);
     return {user, token};
 }
+// const sequelize = new Sequelize({
+    
+//     dialect: 'sqlite',
+//     storage: path.join(__dirname, 'db.sqlite'),
+//     logging: false
+// });
 
 describe('Endpoints', () => {
     const testKittenData = { name: 'Katy Purry', age: 3, color: 'golden' };

@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const { User } = require('./db');
 
+
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
@@ -24,19 +25,60 @@ app.get('/', async (req, res, next) => {
 
 // POST /register
 // OPTIONAL - takes req.body of {username, password} and creates a new user with the hashed password
-
+app.post('/register', async (req, res, next) => {
+    try {
+        const { username, password } = req.body;
+ const hash = await bcrypt.hash(password, SALT_COUNT);
+    const user = await User.create({ username, password: hash });
+      const token = jwt.sign({ username, id: user.id }, process.env.JWT_SECRET);
+        res.send({message: 'success', token: token });
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+});
 // POST /login
 // OPTIONAL - takes req.body of {username, password}, finds user by username, and compares the password with the hashed version from the DB
+app.post('/login', async (req, res, next) => {
 
+    try {
+        const { username, password } = req.body;
+const user = await User.findOne({ where: { username } });
+    if (!user) {
+      res.sendStatus(401);
+    } else {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        res.sendStatus(401);
+      } else {
+        const token = jwt.sign({ username, id: user.id }, process.env.JWT_SECRET);
+        res.send({message: "success", token: token});
+      }
+    }
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+
+})
 // GET /kittens/:id
 // TODO - takes an id and returns the cat with that id
-
+app.get("/kittens/:id", (req, res) => {
+  res.send(kitten)
+});
 // POST /kittens
 // TODO - takes req.body of {name, age, color} and creates a new cat with the given name, age, and color
-
+app.post("/kittens", (req, res) => {
+  const { name, age, color } = req.body;
+  kitten.push({ name, age, color });
+  res.send(kitten);
+});
 // DELETE /kittens/:id
 // TODO - takes an id and deletes the cat with that id
-
+app.delete("/kittens/:id", (req, res) => {
+  kitten = kitten.filter((kitten, idx) => idx !== Number(req.params.id));
+  res.send(kitten);
+});
 // error handling middleware, so failed tests receive them
 app.use((error, req, res, next) => {
   console.error('SERVER ERROR: ', error);
